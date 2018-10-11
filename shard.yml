@@ -1,6 +1,8 @@
 name: cltk
 version: 0.1.1
 
+crystal: 0.26.1
+
 authors:
   - ziprandom <ziprandom@gmail.com>
   - Chris Wailes (RLTK)
@@ -8,7 +10,6 @@ authors:
 dependencies:
   crystal-dfa:
     github: ziprandom/crystal-dfa
-    branch: master
   msgpack:
     github: benoist/msgpack-crystal
 
