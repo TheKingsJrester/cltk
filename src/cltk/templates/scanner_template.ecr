@@ -1,0 +1,152 @@
+<%- if wrap_module -%>
+module <%= module_name %>
+<%- end -%>
+
+class Scanner
+  alias Token = Tuple(Symbol, TokenValue) | Tuple(Symbol)
+  alias TokenValue = <%= token_value %>
+  alias StreamPosition = NamedTuple(position: Int32, size: Int32)
+  class Environment
+    @states    = [:default]
+    @tokens    = Array(Token).new
+    @positions = Array(StreamPosition).new
+    @offset    = 0
+    # the lexed tokens
+    getter :tokens
+    # positions for lexed tokens
+    getter :positions
+    # current lexing position
+    getter :offset
+    # get the currently active lexing state
+    def state; @states.last; end
+    # push a new lexing state to the stack
+    def push_state(state : Symbol); @states.push(state); nil; end
+    # pop the last state from the stack
+    def pop_state; @states.pop; nil; end
+
+    # :nodoc:
+    def yield_with_self
+      with self yield
+    end
+
+    # returns an array of all lexed
+    # tokens and their positions
+    def tokens_with_positions
+      @tokens.zip(@positions)
+    end
+
+    # add a token at the current position
+    # doesn't advance the @offset index
+    def add_token(token : Token, size : Int32)
+      @tokens << token
+      @positions << StreamPosition.new(position: @offset, size: size)
+    end
+
+    # advance the offset by count
+    def advance_position(count : Int32)
+      @offset += count
+    end
+
+    # yield the given block for each token and it's
+    # position and returns the results in an array
+    def map
+      i = -1
+      @tokens.map_with_index do |token, index|
+        with self yield token, @positions[index]
+      end
+    end
+  end
+
+  alias ProcType = Proc(String, Environment, Token?)
+
+  CLTK_VERSION = "<%= CLTK::VERSION %>"
+  DFATABLE = <%= dfa_table %>
+
+  CALLBACKS = Array(ProcType).new
+  macro add_callback(&block)
+    {%unless block.is_a? Nop %}
+      CALLBACKS << ProcType.new do |{{block.args.first}}, env|
+        env.yield_with_self do
+          {{block.body}}
+        end
+      end
+    {% else %}
+      nil
+    {% end %}
+  end
+
+  STRING_CALLBACKS = Hash(String, ProcType).new
+  macro add_string_callback(string, &block)
+    {% unless block.is_a? Nop %}
+      STRING_CALLBACKS[{{string}}] = ProcType.new do |nil, env|
+        env.yield_with_self do
+          {{block.body}}
+        end
+      end
+    {% else %}
+      nil
+    {% end %}
+  end
+
+  <%- callbacks.each do |callback| -%>
+  add_callback { |<%= callback[:arg] %>| <%= callback[:body] %> }
+  <%- end -%>
+
+  <%- string_callbacks.each do |string, callback| -%>
+  add_string_callback(<%= string.inspect %>) { <%= callback %> }
+  <%- end -%>
+
+
+  # lexes a string by continously matching the dfas
+  # against the string, yielding the callbacks with
+  # an instance of Environment
+  def self.lex(string : String) : Environment
+    env = Environment.new
+      string.lines(false).each do |line|
+        lex_string(line, env)
+      end
+    env
+  end
+
+  # continously match the string against the dfas
+  # calling the returned callbacks with the matches
+  # to construct the Token Values
+  private def self.lex_string(string, env)
+    i = 0
+    while (i <= string.size-1)
+      s = string[i..-1]
+      size, cbindex = match(s, env)
+      cbindex && (value = CALLBACKS[-cbindex + 1].try(&.call(s[0, size], env)) ) && env.add_token(value, size)
+      env.advance_position(size)
+      i += size
+    end
+  end
+
+  # runs the set of dfas in @@rx against the string
+  # and returns the index and last position of the
+  # dfa automaton that achieved the longes match
+  private def self.match(string : String, env)
+    match_end = nil
+    dfas = DFATABLE[env.state]
+    possible = dfas.keys
+    string.each_char_with_index do |c, i|
+      break unless possible.size > 0
+      possible = possible.compact_map do |d|
+        if (dfa = dfas[d][:next])
+          if dd = dfa.find {|x| x[:atom][0] <= c.ord <= x[:atom][1] }.try(&.[:state])
+            match_end = {i+1, dfas[d][:callback]} if dfas[dd][:accept]
+            dd
+          end
+        end
+      end
+    end
+    unless match_end
+      raise "Unable to match #{string}!"
+    end
+    match_end
+  end
+end
+
+<%- if wrap_module -%>
+end
+<%- end -%>
