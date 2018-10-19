@@ -267,7 +267,7 @@ macro def_parse(params_as_const = true)
       if opts[:accept] == :first && processing.size == 0
         {% if env("VERBOSE") %}
           v.close unless v == STDOUT
-        {% end%}
+        {% end %}
 	  raise CLTK::Parser::Exceptions::NotInLanguage.new(tokens[0...index], tokens[index], tokens[index+1..-1])
       end
       reduction_guard = false

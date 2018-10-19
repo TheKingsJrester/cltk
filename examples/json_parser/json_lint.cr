@@ -6,11 +6,11 @@ def parse_json(json_text)
     JSON_PARSE::Parser.parse(
       tokens
     )
-  # initializations
-  # lex, parse, interpret
-  rescue e: CLTK::Lexer::Exceptions::LexingError
+    # initializations
+    # lex, parse, interpret
+  rescue e : CLTK::Lexer::Exceptions::LexingError
     puts "Lexing Error"
-  rescue e: CLTK::NotInLanguage
+  rescue e : CLTK::NotInLanguage
     puts "Not In Language"
   rescue e
     puts "an error occured"

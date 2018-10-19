@@ -2,7 +2,7 @@
 # (accept Int32 returns in Lexer and
 # ParserCallbacks)
 module CLTK
-  alias TokenValue = (String|Int32)?
+  alias TokenValue = (String | Int32)?
 end
 
 require "spec"

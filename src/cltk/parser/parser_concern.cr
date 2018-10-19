@@ -6,7 +6,7 @@ require "./actions"
 require "./exceptions/*"
 require "./prod_proc"
 {% if env("VERBOSE") == "procs" %}require "./prod_proc_debug"{% end %}
-  require "./type"
+require "./type"
 require "./parse_stack"
 require "./parse_macro"
 require "./environment"
@@ -15,7 +15,6 @@ module CLTK
   class Parser
     # A module that adds the parse algorithm into the class or module its included in.
     module ParserConcern
-
       macro included
 
         def self.new

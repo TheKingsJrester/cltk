@@ -8,11 +8,11 @@ def parse_json(json_text)
     JSON_PARSE::Parser.parse(
       tokens
     )
-  # initializations
-  # lex, parse, interpret
-  rescue e: CLTK::Lexer::Exceptions::LexingError
+    # initializations
+    # lex, parse, interpret
+  rescue e : CLTK::Lexer::Exceptions::LexingError
     puts "Lexing Error"
-  rescue e: CLTK::Parser::Exceptions::NotInLanguage
+  rescue e : CLTK::Parser::Exceptions::NotInLanguage
     puts "Not In Language"
   rescue e
     puts "an error occured"
@@ -20,7 +20,6 @@ def parse_json(json_text)
 end
 
 describe("json_lexer") do
-
   it "parses a number" do
     result = parse_json("23").as(JsonNumber)
     JSON_PARSE::JsonOutputer.new(result).print.should eq("23")
@@ -79,5 +78,4 @@ describe("json_lexer") do
     string_result = JSON_PARSE::JsonOutputer.new(result).print
     string_result.should eq("{\n  \"username\": \"walter\",\n  \"friends\": [\n    \"granny\",\n    \"sophia\",\n    \"maud\"\n  ],\n  \"address\": {\n    \"street\": \"neverstreet\",\n    \"number\": 12,\n    \"city\": \"nowhere\"\n  }\n}")
   end
-
 end

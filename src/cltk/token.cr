@@ -1,4 +1,5 @@
 require "./streamposition"
+
 # Description:	This file contains code having to do with tokens.
 
 #######################
@@ -27,9 +28,10 @@ module CLTK
     # @param [Object, nil]			value	A value associated with this token.
     # @param [StreamPosition, nil]	position	The position of the token in a stream.
     def initialize(
-          @type : String|Symbol,
-          @value : TokenValue = nil,
-          @position : StreamPosition? = nil)
+      @type : String | Symbol,
+      @value : TokenValue = nil,
+      @position : StreamPosition? = nil
+    )
     end
 
     # Compares one token to another.  This only tests the token's *type*
@@ -40,7 +42,7 @@ module CLTK
     # @return [Boolean]
     def ==(other)
       if other.is_a? Token
-	@type == other.type && @value == other.value
+        @type == other.type && @value == other.value
       else
         false
       end
@@ -53,9 +55,9 @@ module CLTK
     # @return [String] String representing the tokens *type* and *value*.
     def to_s
       if value
-	"#{@type}(#{@value})"
+        "#{@type}(#{@value})"
       else
-	@type.to_s
+        @type.to_s
       end
     end
   end

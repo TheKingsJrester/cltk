@@ -1,6 +1,6 @@
 require "../ast"
-module CLTK
 
+module CLTK
   {% if !CLTK.has_constant?("Type") %}
     alias Type = ASTNode | TokenValue | Array(Type)
   {% end %}
@@ -10,5 +10,4 @@ module CLTK
       alias StackType = CLTK::TokenValue | Tuple(Int32, Array(StackType), Array(StreamPosition)) | Array(StackType)
     end
   {% end %}
-
 end

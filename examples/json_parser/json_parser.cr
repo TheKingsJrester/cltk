@@ -1,7 +1,8 @@
 # coding: utf-8
 module CLTK
-  alias TokenValue = (String|Int32|Float64)?
+  alias TokenValue = (String | Int32 | Float64)?
 end
+
 require "../../src/cltk/lexer"
 require "../../src/cltk/ast"
 require "../../src/cltk/parser/type"
@@ -11,10 +12,8 @@ require "./json_ast"
 require "./json_lexer"
 
 module JSON_PARSE
-
   # The Parser
   class Parser < CLTK::Parser
-
     production(:json, :expression)
 
     production(:expression) do
@@ -28,23 +27,23 @@ module JSON_PARSE
     end
 
     production(:json_integer) do
-      clause(:INTEGER)	{ |i| JsonInteger.new(number: i.as(Int32)); }
+      clause(:INTEGER) { |i| JsonInteger.new(number: i.as(Int32)) }
     end
 
     production(:json_float) do
-      clause(:FLOAT)	{ |f| JsonFloat.new(number: f.as(Float64)); }
+      clause(:FLOAT) { |f| JsonFloat.new(number: f.as(Float64)) }
     end
 
     production(:json_string) do
-      clause(:STRING)	{ |s| JsonString.new(string: s.as(String)) }
+      clause(:STRING) { |s| JsonString.new(string: s.as(String)) }
     end
 
     production(:json_bool) do
-      clause(:BOOL)	{ |b| JsonBool.new(bool:  b == 0 ? true : false) }
+      clause(:BOOL) { |b| JsonBool.new(bool: b == 0 ? true : false) }
     end
 
     production(:json_null) do
-      clause(:NULL)	{ JsonNull.new }
+      clause(:NULL) { JsonNull.new }
     end
 
     production(:json_array) do
@@ -71,7 +70,7 @@ module JSON_PARSE
     build_list_production(:hash_pairs, :hash_pair, :COMMA)
 
     production(:hash_pair) do
-      clause("json_string COLON expression") {|key, _, value| [key, value] }
+      clause("json_string COLON expression") { |key, _, value| [key, value] }
     end
 
     finalize(use: "json_parser.bin")
@@ -107,26 +106,24 @@ module JSON_PARSE
     end
 
     def indent_text(text, level, skip_first_line)
-      indent = level.times.map{" "}.join
+      indent = level.times.map { " " }.join
       lines = text.split("\n")
       if skip_first_line == true
         if lines.size > 1
-          lines[0] + "\n" + lines[1..-2].map{|line| indent + line }.join("\n") + "\n" + indent[0..-1] + lines.last
+          lines[0] + "\n" + lines[1..-2].map { |line| indent + line }.join("\n") + "\n" + indent[0..-1] + lines.last
         else
           lines[0]
         end
       else
-        lines.map{|line| indent + line }.join("\n")
+        lines.map { |line| indent + line }.join("\n")
       end
     end
-
   end
 
   #
   # Output JSON
   #
   class JsonOutputer < JsonSerializer
-
     on JsonArray do |array|
       serialized_children = array.elements.as(Array).map do |child|
         "  " + (visit child, true).as(String)
@@ -137,7 +134,7 @@ module JSON_PARSE
     on JsonObject do |object|
       serialized_children = object.hash.as(Hash).map do |key, value|
         ("  \"#{key}\": " + visit(value, true).as(String))
-       end.join(",\n")
+      end.join(",\n")
       "{\n" + serialized_children + "\n}"
     end
 
@@ -160,14 +157,12 @@ module JSON_PARSE
     on JsonFloat do |number|
       number.number.to_s
     end
-
   end
 
   #
   # Output XML
   #
   class XmlOutputer < JsonSerializer
-
     on JsonArray do |array|
       serialized_children = array.elements.as(Array).map do |child|
         "  <item>\n" + (visit child).as(String) + "\n  </item>"
@@ -177,7 +172,7 @@ module JSON_PARSE
 
     on JsonObject do |object|
       serialized_children = object.hash.as(Hash).map do |key, value|
-          ("<#{key}>\n" + visit(value).as(String) + "\n</#{key}>")
+        ("<#{key}>\n" + visit(value).as(String) + "\n</#{key}>")
       end.join("\n")
       serialized_children.as(String)
     end
@@ -201,7 +196,5 @@ module JSON_PARSE
     on JsonInteger do |number|
       number.number.to_s
     end
-
   end
-
 end

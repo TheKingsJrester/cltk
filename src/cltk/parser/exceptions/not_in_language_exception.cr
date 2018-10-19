@@ -5,7 +5,6 @@ module CLTK
       # for a given token stream.  In other words, the input string is not in the
       # defined language.
       class NotInLanguage < Exception
-
         # @return [Array<Token>]  List of tokens that have been successfully parsed
         getter :seen
 

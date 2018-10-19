@@ -13,16 +13,15 @@ require "../parser"
 
 module CLTK
   module Parsers
-
     # A parser for a simple prefix calculator.
     class PrefixCalc < Parser
       production(:e) do
-	clause("NUM") { |n| n }
+        clause("NUM") { |n| n }
 
-	clause("PLS e e") { |op, e0, e1| e0.as(Int32) + e1.as(Int32) }
-	clause("SUB e e") { |op, e0, e1| e0.as(Int32) - e1.as(Int32) }
-	clause("MUL e e") { |op, e0, e1| e0.as(Int32) * e1.as(Int32) }
-	clause("DIV e e") { |op, e0, e1| e0.as(Int32) / e1.as(Int32) }
+        clause("PLS e e") { |op, e0, e1| e0.as(Int32) + e1.as(Int32) }
+        clause("SUB e e") { |op, e0, e1| e0.as(Int32) - e1.as(Int32) }
+        clause("MUL e e") { |op, e0, e1| e0.as(Int32) * e1.as(Int32) }
+        clause("DIV e e") { |op, e0, e1| e0.as(Int32) / e1.as(Int32) }
         nil
       end
 

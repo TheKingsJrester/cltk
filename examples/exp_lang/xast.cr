@@ -15,8 +15,8 @@ end
 
 class XProgram < Expression
   values({
-           expressions: Array(Expression)
-         })
+    expressions: Array(Expression),
+  })
 
   def eval_scope(scope)
     expressions.compact.reduce(EXP_LANG::Undefined) do |lastResult, exp|
@@ -27,14 +27,14 @@ end
 
 class ANumber < Expression
   values({
-           value: Float64
-         })
+    value: Float64,
+  })
 
   def to_s
     value.to_s
   end
-
 end
+
 class KNil < Expression
   def to_s
     "nil"
@@ -53,17 +53,18 @@ class KFalse < KBool
   def to_s
     "false"
   end
-
 end
+
 class AHash < Expression
   values({
-           dict: Hash(Variable, Expression)
-         })
+    dict: Hash(Variable, Expression),
+  })
+
   def eval_scope(scope)
     h = AHash.new(dict: dict.reduce({} of Variable => Expression) do |memo, pair|
-        memo[pair[0]] = pair[1].eval_scope(scope).as(Expression)
-        memo
-      end
+      memo[pair[0]] = pair[1].eval_scope(scope).as(Expression)
+      memo
+    end
     )
     h
   end
@@ -79,33 +80,30 @@ class AHash < Expression
 
       "  #{key.to_s}: #{indented_value.to_s}"
     end.join(",\n") + "\n}"
-
   end
-
 end
 
 class AArray < Expression
   values({
-             members: Array(Expression)
-           })
+    members: Array(Expression),
+  })
+
   def eval_scope(scope)
-    AArray.new(members:
-      members.map do |m|
-        m.as(Expression).eval_scope(scope).as(Expression)
-      end
+    AArray.new(members: members.map do |m|
+      m.as(Expression).eval_scope(scope).as(Expression)
+    end
     )
   end
 
   def to_s
     "[ " + members.map { |m| m.to_s.not_nil! }.join(", ") + " ]"
   end
-
 end
 
 class AString < Expression
   values({
-           value: String
-         })
+    value: String,
+  })
 
   def to_s
     "\"" + value.to_s + "\""
@@ -114,8 +112,8 @@ end
 
 class Variable < Expression
   values({
-           name: String
-         })
+    name: String,
+  })
 
   def to_s
     name.to_s
@@ -127,11 +125,11 @@ class Variable < Expression
 end
 
 class FunCall < Expression
-
   values({
-             prototype_exp: Expression,
-             parameters: Array(Expression)
-           })
+    prototype_exp: Expression,
+    parameters:    Array(Expression),
+  })
+
   def eval_scope(scope)
     prototype = prototype_exp.eval_scope(scope)
     raise "#{prototype} is not a Function" unless prototype.is_a? Prototype
@@ -145,11 +143,11 @@ class FunCall < Expression
         exp
       end.as(Expression)
     end
-    param_values = (0..(param_names.size-1)).map do |index|
+    param_values = (0..(param_names.size - 1)).map do |index|
       if param_values[index]?
-           param_values[index]
-         else
-           KNil.new
+        param_values[index]
+      else
+        KNil.new
       end
     end
 
@@ -171,9 +169,9 @@ end
 
 class Binary < Expression
   values({
-             left: Expression,
-             right: Expression
-           })
+    left:  Expression,
+    right: Expression,
+  })
 end
 
 class KOr < Binary
@@ -201,9 +199,9 @@ end
 
 class VarAssign < Expression
   values({
-             left: Variable,
-             right: Expression
-           })
+    left:  Variable,
+    right: Expression,
+  })
 
   def eval_scope(scope)
     if left.is_a? Variable
@@ -224,7 +222,7 @@ class Add < Binary
   def eval_scope(scope)
     ANumber.new(
       value: left.eval_scope(scope).as(ANumber).value +
-      right.eval_scope(scope).as(ANumber).value
+             right.eval_scope(scope).as(ANumber).value
     )
   end
 
@@ -232,51 +230,50 @@ class Add < Binary
     left.to_s + " + " + right.to_s
   end
 end
+
 class Sub < Binary
   def eval_scope(scope)
     ANumber.new(value: left.eval_scope(scope).as(ANumber).value - right.eval_scope(scope).as(ANumber).value)
   end
 end
+
 class Mul < Binary
   def eval_scope(scope)
     ANumber.new(value: left.eval_scope(scope).as(ANumber).value * right.eval_scope(scope).as(ANumber).value)
   end
 end
 
-
 class Div < Binary
   def eval_scope(scope)
     ANumber.new(value: left.eval_scope(scope).as(ANumber).value / right.eval_scope(scope).as(ANumber).value)
   end
 end
-class LT  < Binary; end
 
+class LT < Binary; end
 
 class Call < Expression
-
   values({
-             name: String,
-             args: Array(Expression)
-           })
+    name: String,
+    args: Array(Expression),
+  })
 end
 
 class FunBody < CLTK::ASTNode
   values({
-    expressions: Array(Expression)
+    expressions: Array(Expression),
   })
 end
 
 class Prototype < Expression
   values({
-             args: Array(Variable),
-             body: FunBody,
-             name: String | Nil,
-             scope: EXP_LANG::Scope(Expression) | Nil
-
+    args:  Array(Variable),
+    body:  FunBody,
+    name:  String | Nil,
+    scope: EXP_LANG::Scope(Expression) | Nil,
   })
 
   def to_s
-    "Function #{name}(" + args.map {|v| v.name}.join(',') + ")"
+    "Function #{name}(" + args.map { |v| v.name }.join(',') + ")"
   end
 
   def eval_scope(sscope)
@@ -290,7 +287,7 @@ end
 
 class Function < CLTK::ASTNode
   values({
-             proto: Prototype,
-             body: Expression
-           })
+    proto: Prototype,
+    body:  Expression,
+  })
 end

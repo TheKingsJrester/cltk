@@ -1,6 +1,7 @@
 require "../spec_helper"
 
 class JsonExpression < CLTK::ASTNode; end
+
 class JsonNull < JsonExpression; end
 
 class JsonString < JsonExpression
@@ -26,7 +27,7 @@ class JsonArray < JsonExpression
 end
 
 class Parent < CLTK::ASTNode
-  values({name: String,
+  values({name:    String,
           child_a: Child,
           child_b: Child})
   traverse(:children, :child_a)
@@ -34,14 +35,12 @@ class Parent < CLTK::ASTNode
 end
 
 class Child < CLTK::ASTNode
-  values({name: String,
+  values({name:     String,
           siblings: Array(Child)})
   traverse(:children, :siblings)
 end
 
-
 describe CLTK::ASTNode do
-
   describe "initialization" do
     it "initializes a simple class" do
       js = JsonString.new(text: "hey a text")
@@ -149,10 +148,10 @@ describe CLTK::ASTNode do
       jsarray = JsonArray.new(elements: [js1, js2])
       js_a = SuperSpecialJsonString.new(text: "this is a text", special: true, child: jsarray)
       js_a.values.should eq({
-                              text: "this is a text",
-                              special: true,
-                              child: jsarray
-                            })
+        text:    "this is a text",
+        special: true,
+        child:   jsarray,
+      })
     end
 
     describe "traversal" do
@@ -200,20 +199,19 @@ describe CLTK::ASTNode do
       end
     end
 
-#    pending "has a nice, readable string representation" do
-#      js1 = JsonString.new(text: "text1").as(JsonExpression)
-#      js2 = JsonString.new(text: "text2").as(JsonExpression)
-#      jsarray = JsonArray.new(elements: [js1, js2])
-#      js_a = SuperSpecialJsonString.new(text: "this is a text", special: true, child: jsarray)
-#      js_a.inspect.should eq(
-#                            %{SuperSpecialJsonString(text: "this is a text", special: true, child: JsonArray(elements: [JsonString(text: "text1"), JsonString(text: "text2")]))}
-#                          )
-#    end
+    #    pending "has a nice, readable string representation" do
+    #      js1 = JsonString.new(text: "text1").as(JsonExpression)
+    #      js2 = JsonString.new(text: "text2").as(JsonExpression)
+    #      jsarray = JsonArray.new(elements: [js1, js2])
+    #      js_a = SuperSpecialJsonString.new(text: "this is a text", special: true, child: jsarray)
+    #      js_a.inspect.should eq(
+    #                            %{SuperSpecialJsonString(text: "this is a text", special: true, child: JsonArray(elements: [JsonString(text: "text1"), JsonString(text: "text2")]))}
+    #                          )
+    #    end
 
     it "works with a class in the hierarchy thats not defining its own values" do
       s1 = ChildOfSpecialisedJsonString.new(text: "a text for JsonString", childish: false)
       s1.values.should eq({text: "a text for JsonString", childish: false})
     end
   end
-
 end

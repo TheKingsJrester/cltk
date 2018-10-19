@@ -13,9 +13,10 @@ module CLTK
       getter :actions
 
       @id = -1
-      @actions: Hash(String, Array(CLTK::Parser::Action))
+      @actions : Hash(String, Array(CLTK::Parser::Action))
 
       def initialize(@id : Int32, @actions : Hash(String, Array(CLTK::Parser::Action)), @items : Array(CFG::Item)); end
+
       # Instantiate a new State object.
       #
       # @param [Array<Symbol>]     tokens  Tokens that represent this state
@@ -60,7 +61,7 @@ module CLTK
 
       # @param [CFG::Item] item Item to add to this state.
       def append(item)
-        if item.is_a?(CFG::Item) &&  !@items.includes?(item)
+        if item.is_a?(CFG::Item) && !@items.includes?(item)
           @items << item
         end
       end
@@ -68,6 +69,7 @@ module CLTK
       def <<(item)
         append(item)
       end
+
       # Clean this State by removing the list of {CFG::Item} objects.
       #
       # @return [void]
@@ -84,7 +86,7 @@ module CLTK
         self.each do |item|
           next_symbol = item.next_symbol
           if next_symbol && CFG.is_nonterminal?(next_symbol)
-	    productions[next_symbol].each { |p| self << p.to_item }
+            productions[next_symbol].each { |p| self << p.to_item }
           end
         end
       end
@@ -102,16 +104,14 @@ module CLTK
 
         return nil unless actions
 
-        reductions	= 0
-        shifts		= 0
+        reductions = 0
+        shifts = 0
 
         actions.each do |action|
           if action.is_a?(Actions::Reduce)
-	    reductions += 1
-
+            reductions += 1
           elsif action.is_a?(Actions::Shift)
-	    shifts += 1
-
+            shifts += 1
           end
         end
 
@@ -164,6 +164,5 @@ module CLTK
         end
       end
     end
-
   end
 end

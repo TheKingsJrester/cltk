@@ -3,7 +3,6 @@ require "./llvm_binding_extensions"
 require "./kast"
 
 module Kazoo
-
   class Contractor
     include CLTK::Visitor(LLVM::Builder)
 
@@ -17,7 +16,7 @@ module Kazoo
       @ctx.float.const_double(0.0)
     end
 
-    def initialize()
+    def initialize
       LLVM.init_x86
       @ctx = LLVM::Context.new
       @main_module = @ctx.new_module("Kazoo JIT")
@@ -38,11 +37,11 @@ module Kazoo
     end
 
     def execute(func, args = [] of LLVM::GenericValue)
-       @engine.run_function(func, @ctx)
+      @engine.run_function(func, @ctx)
     end
 
     def optimize(func : LLVM::Function)
-      @fpm.run { |runner | runner.run(func) }
+      @fpm.run { |runner| runner.run(func) }
       func
     end
 
@@ -57,9 +56,9 @@ module Kazoo
     def add(ast)
       case ast
       when Function, Prototype then visit ast
-      when Expression          then visit Function.new(
-                                            proto: Kazoo::Prototype.new(name: "", arg_names: [] of String),
-                                            body: ast)
+      when Expression then visit Function.new(
+        proto: Kazoo::Prototype.new(name: "", arg_names: [] of String),
+        body: ast)
       else raise "Attempting to add an unhandled node type to the JIT."
       end.as(LLVM::Function)
     end
@@ -67,57 +66,56 @@ module Kazoo
     on Assign do |node|
       right = visit node.right
       loc =
-    	if @st.has_key?(node.name)
-    	  @st[node.name]
-    	else
-    	  @st[node.name] = alloca @ctx.float, node.name
-    	end
+        if @st.has_key?(node.name)
+          @st[node.name]
+        else
+          @st[node.name] = alloca @ctx.float, node.name
+        end
       store(right, loc)
       right
     end
 
     on Variable do |node|
       if @st[node.name]?
-	   load @st[node.name], node.name
+        load @st[node.name], node.name
       else
-	raise "Unitialized variable \"#{node.name}\"."
+        raise "Unitialized variable \"#{node.name}\"."
       end
     end
 
     on Call do |node|
       callee = @main_module.functions[node.name]
       if !callee
-	raise "Unknown function referenced."
+        raise "Unknown function referenced."
       end
       if callee.params.size != node.args.size
-	raise "Function #{node.name} expected #{callee.params.size} argument(s) but was called with #{node.args.size}."
+        raise "Function #{node.name} expected #{callee.params.size} argument(s) but was called with #{node.args.size}."
       end
 
-
       call callee,
-           node.args.map { |arg| (visit arg).as(LLVM::Value) },
-           "calltmp"
+        node.args.map { |arg| (visit arg).as(LLVM::Value) },
+        "calltmp"
     end
 
     on Prototype do |node|
       func = begin
-               # get function if it"s already defined
-               @main_module.functions[node.name].tap do |func|
-	         if LibLLVM.count_basic_blocks(func) != 0
-	           raise "Redefinition of function #{node.name}."
-	         elsif func.params.size != node.arg_names.size
-	           raise "Redefinition of function #{node.name} with different number of arguments."
-	         end
-               end
-             rescue
-               # add function, if not
-	       @main_module.functions.add(node.name, Array.new(node.arg_names.size, @ctx.float), @ctx.float)
-             end
+        # get function if it"s already defined
+        @main_module.functions[node.name].tap do |func|
+          if LibLLVM.count_basic_blocks(func) != 0
+            raise "Redefinition of function #{node.name}."
+          elsif func.params.size != node.arg_names.size
+            raise "Redefinition of function #{node.name} with different number of arguments."
+          end
+        end
+      rescue
+        # add function, if not
+        @main_module.functions.add(node.name, Array.new(node.arg_names.size, @ctx.float), @ctx.float)
+      end
       # Name each of the function paramaters.
       func.tap do
-	node.arg_names.each_with_index do |name, i|
-	  func.params[i].name = name
-	end
+        node.arg_names.each_with_index do |name, i|
+          func.params[i].name = name
+        end
       end
     end
 
@@ -128,8 +126,8 @@ module Kazoo
       # Translate the function"s prototype.
       func = visit node.proto.as(Prototype)
       func.params.to_a.each do |param|
-	@st[param.name] = alloca @ctx.float, param.name
-	store param, @st[param.name]
+        @st[param.name] = alloca @ctx.float, param.name
+        store param, @st[param.name]
       end
       # Create a new basic block to insert into, allocate space for
       # the arguments, store their values, translate the expression,
@@ -138,7 +136,7 @@ module Kazoo
         with_builder(builder) do
           body = node.body
           case body
-          when ExpressionList then
+          when ExpressionList
             expressions = body.expressions
             expressions.each_with_index do |expression, index|
               if index < (expressions.size - 1)
@@ -153,10 +151,9 @@ module Kazoo
         end
       end
 
-
       # Verify the function and return it.
       func.tap do |func|
-        LibLLVM.verify_function(func, LLVM::VerifierFailureAction::ReturnStatusAction )
+        LibLLVM.verify_function(func, LLVM::VerifierFailureAction::ReturnStatusAction)
       end # .tap &.dump
       func
     end
@@ -176,21 +173,20 @@ module Kazoo
       br loop_cond_bb
       position_at_end(loop_cond_bb)
       branch_body = visit(node.cond)
-      end_cond = fcmp LLVM::RealPredicate::ONE, branch_body , zero, "loopcond"
+      end_cond = fcmp LLVM::RealPredicate::ONE, branch_body, zero, "loopcond"
 
       loop_bb1 = nil
       loop_bb0 = func.basic_blocks.append("loop") do |builder|
         with_builder(builder) do
-         visit node.body
-         loop_bb1 = builder.insert_block
-         step_val = visit node.step
-         var	  = load loc, node.var
-         next_var = fadd var, step_val, "nextvar"
-         store next_var, loc
-         br loop_cond_bb
+          visit node.body
+          loop_bb1 = builder.insert_block
+          step_val = visit node.step
+          var = load loc, node.var
+          next_var = fadd var, step_val, "nextvar"
+          store next_var, loc
+          br loop_cond_bb
         end
       end
-
 
       # Add the conditional branch to the loop_cond_bb.
       after_bb = func.basic_blocks.append("afterloop") do |builder|
@@ -214,22 +210,22 @@ module Kazoo
       table = LLVM::PhiTable.new
 
       start_bb = insert_block
-      func      = LLVM::Function.new LibLLVM.get_basic_block_parent(start_bb)
+      func = LLVM::Function.new LibLLVM.get_basic_block_parent(start_bb)
 
-      ## THEN
+      # # THEN
       new_then_bb = nil
-      then_bb               = func.basic_blocks.append("then") do |builder|
+      then_bb = func.basic_blocks.append("then") do |builder|
         then_val, new_then_bb = with_builder(builder) do
-          { visit(node.elseExp), builder.insert_block }
+          {visit(node.elseExp), builder.insert_block}
         end
         table.add(new_then_bb, then_val.as(LLVM::Value))
       end
 
-      ## ELSE
+      # # ELSE
       new_else_bb = nil
-      else_bb               = func.basic_blocks.append("else") do |builder|
+      else_bb = func.basic_blocks.append("else") do |builder|
         else_val, new_else_bb = with_builder(builder) do
-          { visit(node.thenExp), builder.insert_block }
+          {visit(node.thenExp), builder.insert_block}
         end
         table.add(new_else_bb, else_val.as(LLVM::Value))
       end
@@ -252,7 +248,7 @@ module Kazoo
     end
 
     on Binary do |node|
-      left  = visit node.left
+      left = visit node.left
       right = visit node.right
 
       case node
@@ -264,15 +260,15 @@ module Kazoo
       when GT  then ui2fp(fcmp(LLVM::RealPredicate::UGT, left, right, "cmptmp"), @ctx.float, "gttmp")
       when Eql then ui2fp(fcmp(LLVM::RealPredicate::UEQ, left, right, "cmptmp"), @ctx.float, "eqtmp")
       when Or
-	left  = fcmp LLVM::RealPredicate::UNE,  left, zero, "lefttmp"
-	right = fcmp LLVM::RealPredicate::UNE, right, zero, "righttmp"
+        left = fcmp LLVM::RealPredicate::UNE, left, zero, "lefttmp"
+        right = fcmp LLVM::RealPredicate::UNE, right, zero, "righttmp"
 
-	ui2fp (@env.or left, right, "ortmp"), @ctx.float, "orltmp"
+        ui2fp (@env.or left, right, "ortmp"), @ctx.float, "orltmp"
       when And
-	left  = fcmp LLVM::RealPredicate::UNE,  left, zero, "lefttmp"
-	right = fcmp LLVM::RealPredicate::UNE, right, zero, "rightmp"
+        left = fcmp LLVM::RealPredicate::UNE, left, zero, "lefttmp"
+        right = fcmp LLVM::RealPredicate::UNE, right, zero, "rightmp"
 
-	ui2fp (@env.and left, right, "andtmp"), @ctx.float, "andtmp"
+        ui2fp (@env.and left, right, "andtmp"), @ctx.float, "andtmp"
       else right
       end
     end

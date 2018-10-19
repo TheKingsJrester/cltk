@@ -34,7 +34,6 @@ require "./parser/msgpack"
 
 # The CLTK root module
 module CLTK
-
   # The Parser class may be sub-classed to produce new parsers.  These
   # parsers have a lot of features, and are described in the main
   # documentation.
@@ -51,14 +50,14 @@ module CLTK
 
     @@production_precs = Array(String | {String, Int32} | Nil).new
     @@production_precs_prepare = {} of Int32 => (String | Nil | {String, Int32})
-    @@grammar          = CLTK::CFG.new
-    @@conflicts        = Hash( Int32, Array({ String, String }) ).new {|h, k| h[k] = Array({String, String}).new}
-    @@token_hooks      = Hash(String, Array(Proc(Environment, Nil))).new do |h, k|
+    @@grammar = CLTK::CFG.new
+    @@conflicts = Hash(Int32, Array({String, String})).new { |h, k| h[k] = Array({String, String}).new }
+    @@token_hooks = Hash(String, Array(Proc(Environment, Nil))).new do |h, k|
       h[k] = [] of Proc(Environment, Nil)
     end
 
     alias CLAUSE = NamedTuple(lhs: Symbol, expression: String, precedence: String?, arg_type: Symbol?, cb: Int32)
-    alias LIST_PROD = NamedTuple(empty: Bool, lhs: Symbol|String, elements: String|Array(String), separator: String)
+    alias LIST_PROD = NamedTuple(empty: Bool, lhs: Symbol | String, elements: String | Array(String), separator: String)
 
     macro inherited
       DEFAULT_ARG_TYPE = [:splat]
@@ -244,11 +243,11 @@ module CLTK
     end
 
     # Shorthands for defining productions and clauses
-    def self.c(expression, precedence = nil, arg_type = @@default_arg_type, &action: Array(Type), Environment -> _)
+    def self.c(expression, precedence = nil, arg_type = @@default_arg_type, &action : Array(Type), Environment -> _)
       self.clause(expression, precedence, arg_type, &action)
     end
 
-    def self.p(symbol, expression = nil, precedence = nil, arg_type = @@default_arg_type, &action: Array(Type), Environment -> _)
+    def self.p(symbol, expression = nil, precedence = nil, arg_type = @@default_arg_type, &action : Array(Type), Environment -> _)
       self.production(symbol, expression, precedence, arg_type, &action)
     end
 
@@ -353,47 +352,45 @@ module CLTK
       # Check to make sure all non-terminals appear on the
       # left-hand side of some production.
       @@grammar.nonterms.each do |sym|
-	unless @@lh_sides.values.includes?(sym)
-	  raise Exception.new "Non-terminal #{sym} does not appear on the left-hand side of any production."
-	end
+        unless @@lh_sides.values.includes?(sym)
+          raise Exception.new "Non-terminal #{sym} does not appear on the left-hand side of any production."
+        end
       end
       # Check the actions in each state.
       each_state do |state|
-	state.actions.each do |sym, actions|
-	  if CFG.is_terminal?(sym)
-	    # Here we check actions for terminals.
-	    actions.each do |action|
-	      if action.is_a?(Actions::Accept)
-		if sym.to_s != "EOS"
-		  raise CLTK::Parser::Exceptions::ParserConstructionException.new(
-                          "Accept action found for terminal #{sym} in state #{state.id}."
-                        )
-		end
-
-	      elsif !(action.is_a?(Actions::GoTo) || action.is_a?(Actions::Reduce) ||
-                      action.is_a?(Actions::Shift))
-		raise CLTK::Parser::Exceptions::ParserConstructionException.new(
-                        "Object of type #{action.class} found in actions for terminal " +
-			"#{sym} in state #{state.id}.")
-	      end
-	    end
-	    if (conflict = state.conflict_on?(sym))
-	      self.inform_conflict(state.id, conflict, sym)
-	    end
-	  else
-	    # Here we check actions for non-terminals.
-	    if actions.size > 1
-	      raise CLTK::Parser::Exceptions::ParserConstructionException.new(
-                      "State #{state.id} has multiple GoTo actions for non-terminal #{sym}."
-                    )
-
-	    elsif actions.size == 1 && !actions.first.is_a?(Actions::GoTo)
-	      raise CLTK::Parser::Exceptions::ParserConstructionException.new(
-                      "State #{state.id} has non-GoTo action for non-terminal #{sym}."
-                    )
-	    end
-	  end
-	end
+        state.actions.each do |sym, actions|
+          if CFG.is_terminal?(sym)
+            # Here we check actions for terminals.
+            actions.each do |action|
+              if action.is_a?(Actions::Accept)
+                if sym.to_s != "EOS"
+                  raise CLTK::Parser::Exceptions::ParserConstructionException.new(
+                    "Accept action found for terminal #{sym} in state #{state.id}."
+                  )
+                end
+              elsif !(action.is_a?(Actions::GoTo) || action.is_a?(Actions::Reduce) ||
+                    action.is_a?(Actions::Shift))
+                raise CLTK::Parser::Exceptions::ParserConstructionException.new(
+                  "Object of type #{action.class} found in actions for terminal " +
+                  "#{sym} in state #{state.id}.")
+              end
+            end
+            if (conflict = state.conflict_on?(sym))
+              self.inform_conflict(state.id, conflict, sym)
+            end
+          else
+            # Here we check actions for non-terminals.
+            if actions.size > 1
+              raise CLTK::Parser::Exceptions::ParserConstructionException.new(
+                "State #{state.id} has multiple GoTo actions for non-terminal #{sym}."
+              )
+            elsif actions.size == 1 && !actions.first.is_a?(Actions::GoTo)
+              raise CLTK::Parser::Exceptions::ParserConstructionException.new(
+                "State #{state.id} has non-GoTo action for non-terminal #{sym}."
+              )
+            end
+          end
+        end
       end
     end
 
@@ -407,22 +404,21 @@ module CLTK
     # @return [Boolean] If the destination symbol is reachable from the start symbol after reading *symbols*.
     private def self.check_reachability(start, dest, symbols)
       path_exists = true
-      cur_state   = start
+      cur_state = start
 
       symbols.each do |sym|
+        actions = @@states[cur_state.id].on?(sym)
+        actions = actions.select { |a| a.is_a?(Actions::Shift) } if CFG.is_terminal?(sym)
 
-	actions = @@states[cur_state.id].on?(sym)
-	actions = actions.select { |a| a.is_a?(Actions::Shift) } if CFG.is_terminal?(sym)
+        if actions.empty?
+          path_exists = false
+          break
+        end
 
-	if actions.empty?
-	  path_exists = false
-	  break
-	end
-
-	# There can only be one Shift action for terminals and
-	# one GoTo action for non-terminals, so we know the
-	# first action is the only one in the list.
-	cur_state = @@states[actions.first.id]
+        # There can only be one Shift action for terminals and
+        # one GoTo action for non-terminals, so we know the
+        # first action is the only one in the list.
+        cur_state = @@states[actions.first.id]
       end
 
       path_exists && cur_state.id == dest.id
@@ -434,24 +430,23 @@ module CLTK
     # @return [void]
     private def self.clean
       # We've told the developer about conflicts by now.
-      #@@conflicts = nil
+      # @@conflicts = nil
 
       # Drop the grammar and the grammar'.
-      #@@grammar       = nil
-      #@@grammar_prime = nil
+      # @@grammar       = nil
+      # @@grammar_prime = nil
 
       # Drop precedence and bookkeeping information.
       # @@curr_lhs  = nil
       # @@curr_prec = nil
 
       # @@prec_counts      = nil
-      #@@production_precs = nil
+      # @@production_precs = nil
       # @@token_precs      = nil
 
       # Drop the items from each of the states.
       each_state { |state| state.clean }
     end
-
 
     alias Opts = {explain: Bool | String | IO, lookahead: Bool, precedence: Bool, use: String?}
 
@@ -744,8 +739,8 @@ module CLTK
     def self.each_state
       current_state = 0
       while current_state < @@states.size
-	yield @@states.at(current_state)
-	current_state += 1
+        yield @@states.at(current_state)
+        current_state += 1
       end
     end
 
@@ -764,28 +759,27 @@ module CLTK
     #
     # @return [CFG]
     def self.grammar_prime
-
       each_state do |state|
-	state.each do |item|
-	  lhs = "#{state.id}_#{item.next_symbol}".to_s
+        state.each do |item|
+          lhs = "#{state.id}_#{item.next_symbol}".to_s
 
-	  next unless CFG.is_nonterminal?(item.next_symbol) &&
+          next unless CFG.is_nonterminal?(item.next_symbol) &&
                       !@@grammar_prime.productions_sym.keys.includes?(lhs)
 
-	  @@grammar.productions_sym[item.next_symbol].each do |production|
-	    rhs = ""
+          @@grammar.productions_sym[item.next_symbol].each do |production|
+            rhs = ""
 
-	    cstate = state
+            cstate = state
 
-	    production.rhs.each do |symbol|
-	      rhs += "#{cstate.id}_#{symbol} "
+            production.rhs.each do |symbol|
+              rhs += "#{cstate.id}_#{symbol} "
 
-	      cstate = @@states[cstate.on?(symbol).first.id]
-	    end
+              cstate = @@states[cstate.on?(symbol).first.id]
+            end
 
-	    @@grammar_prime.production(lhs, rhs)
-	  end
-	end
+            @@grammar_prime.production(lhs, rhs)
+          end
+        end
       end
 
       @@grammar_prime
@@ -803,7 +797,6 @@ module CLTK
     end
 
     def self.parse(tokens, opts = nil)
-
       #      parser.parse(tokens, opts)
     end
 
@@ -824,11 +817,11 @@ module CLTK
     # @param [Proc]    proc  Code to execute when the block is seen
     #
     # @return [void]
-    def self.token_hook(sym, &proc: Proc(Environment, Nil))
+    def self.token_hook(sym, &proc : Proc(Environment, Nil))
       if CFG.is_terminal?(sym)
-	@@token_hooks[sym.to_s] << proc
+        @@token_hooks[sym.to_s] << proc
       else
-	raise "Method token_hook expects `sym` to be non-terminal."
+        raise "Method token_hook expects `sym` to be non-terminal."
       end
     end
 

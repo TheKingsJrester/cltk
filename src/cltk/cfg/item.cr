@@ -65,7 +65,7 @@ module CLTK
       #
       # @return [String]
       def to_s(padding = 0)
-        Array(String).new(padding){" "}.join + @lhs + "->" + @rhs.map { |s| s.to_s }.insert(@dot, "·").join(' ')
+        Array(String).new(padding) { " " }.join + @lhs + "->" + @rhs.map { |s| s.to_s }.insert(@dot, "·").join(' ')
       end
     end
   end

@@ -17,16 +17,16 @@ module CLTK
       # @param [Symbol]	start_state	Lexer's start state.
       # @param [Match]	match		Match object for matching text.
 
-      @state: Array(Symbol)
-      @match: Regex::MatchData?
+      @state : Array(Symbol)
+      @match : Regex::MatchData?
 
       def match
         @match.as(Regex::MatchData)
       end
 
       def initialize(start_state, @match = nil)
-        @state	= [start_state]
-        @flags	= [] of Symbol
+        @state = [start_state]
+        @flags = [] of Symbol
       end
 
       # Pops a state from the state stack.

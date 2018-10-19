@@ -1,10 +1,9 @@
 module CLTK
   module Visitor(T)
-
     @env : T
 
     def yield_with_env(item, &block)
-        with @env yield(item)
+      with @env yield(item)
     end
 
     macro on(klass, &block)
@@ -17,7 +16,7 @@ module CLTK
 
     def wrapped_visit(item)
       raise "oh"
-#      raise "no patterns defined for #{item} (#{item.class})"
+      #      raise "no patterns defined for #{item} (#{item.class})"
     end
 
     def visit(node)

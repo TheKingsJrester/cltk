@@ -1,5 +1,6 @@
 require "crystal-dfa"
 require "./lexer/exceptions"
+
 module CLTK
   #
   # A Lexer Class based on [crystal-dfa](https://github.com/ziprandom/crystal-dfa) the Crystal RegExp implementation
@@ -20,23 +21,23 @@ module CLTK
   #   # operators are keywords, so we use
   #   # stringrules to have one single
   #   # dfa matching
-  #   rule("+")                { {:PLS} }
-  #   rule("-")                { {:SUB} }
-  #   rule("*")                { {:MUL} }
-  #   rule("/")                { {:DIV} }
+  #   rule("+") { {:PLS} }
+  #   rule("-") { {:SUB} }
+  #   rule("*") { {:MUL} }
+  #   rule("/") { {:DIV} }
   #
   #   # ints and floats need to be matched with
   #   # regular expressions (doesn't use Regex but
   #   # DFA::RegExp)
-  #   rule(/\d+\.\d+/)         { |s| {:FLOAT, s} }
-  #   rule(/\d+/)              { |s| {:INT,   s} }
+  #   rule(/\d+\.\d+/) { |s| {:FLOAT, s} }
+  #   rule(/\d+/) { |s| {:INT, s} }
   #
   #   # upon sighting of a '#' (and optionally trailing ' ')
   #   # we go into :comment state and don't leave until we
   #   # find a '\n'
-  #   rule(/#\s*/)             {     push_state(:comment) }
-  #   rule(/[^\n]+/, :comment) { |t| {:COMMENT, t}        }
-  #   rule("\n", :comment)     {     pop_state            }
+  #   rule(/#\s*/) { push_state(:comment) }
+  #   rule(/[^\n]+/, :comment) { |t| {:COMMENT, t} }
+  #   rule("\n", :comment) { pop_state }
   #
   #   # calculate the dfa's for the string-rules
   #   # will be called upon first `lex` call if
@@ -55,23 +56,22 @@ module CLTK
   #
   # source
   #
-  # pp CalcLexer.lex(source).tokens   # => [{:COMMENT, "a simple calculation"},
-  #                                   #     {:INT, "4"},
-  #                                   #     {:PLS},
-  #                                   #     {:INT, "4"},
-  #                                   #     {:COMMENT,
-  #                                   #      "the first addition"},
-  #                                   #     {:SUB},
-  #                                   #     {:FLOAT,
-  #                                   #      "3.14"},
-  #                                   #     {:COMMENT,
-  #                                   #      "a substraction"},
-  #                                   #     {:MUL},
-  #                                   #     {:INT, "3"}]
+  # pp CalcLexer.lex(source).tokens # => [{:COMMENT, "a simple calculation"},
+  # #     {:INT, "4"},
+  # #     {:PLS},
+  # #     {:INT, "4"},
+  # #     {:COMMENT,
+  # #      "the first addition"},
+  # #     {:SUB},
+  # #     {:FLOAT,
+  # #      "3.14"},
+  # #     {:COMMENT,
+  # #      "a substraction"},
+  # #     {:MUL},
+  # #     {:INT, "3"}]
   # ```
   #
   abstract class Scanner
-
     alias Token = Tuple(Symbol, TokenValue) | Tuple(Symbol)
     alias StreamPosition = NamedTuple(position: Int32, size: Int32)
 
@@ -94,22 +94,31 @@ module CLTK
     # gets returned by the lexer
     #
     class Environment
-      @states    = [:default]
-      @tokens    = Array(Token).new
+      @states = [:default]
+      @tokens = Array(Token).new
       @positions = Array(StreamPosition).new
-      @offset    = 0
+      @offset = 0
       # the lexed tokens
       getter :tokens
       # positions for lexed tokens
       getter :positions
       # current lexing position
       getter :offset
+
       # get the currently active lexing state
-      def state; @states.last; end
+      def state
+        @states.last
+      end
+
       # push a new lexing state to the stack
-      def push_state(state : Symbol); @states.push(state); nil; end
+      def push_state(state : Symbol)
+        @states.push(state); nil
+      end
+
       # pop the last state from the stack
-      def pop_state; @states.pop; nil; end
+      def pop_state
+        @states.pop; nil
+      end
 
       # :nodoc:
       def yield_with_self
@@ -166,7 +175,6 @@ module CLTK
       end
     end
 
-
     #
     # Defines a lexing rule. The expression can either
     # be a string or a `DFA::RegExp` compatible expression.
@@ -188,13 +196,13 @@ module CLTK
     # string rules for fast keyword matching
     def self.finalize
       @@strings.each do |state, hash|
-        litdfa = DFA::RegExp.new(hash.map {|k, _| Regex.escape(k) }.join("|")).dfa
+        litdfa = DFA::RegExp.new(hash.map { |k, _| Regex.escape(k) }.join("|")).dfa
         @@rx[state] ||= Array({DFA::DFA::DState, Int32?}).new
-        @@rx[state] << ({ litdfa, @@callbacks.size+1 })
-        cb = ProcType.new { |string, env| hash[string].try &.call(string, env)}
+        @@rx[state] << ({litdfa, @@callbacks.size + 1})
+        cb = ProcType.new { |string, env| hash[string].try &.call(string, env) }
         @@callbacks.unshift cb
       end
-      @@is_finalized =  true
+      @@is_finalized = true
     end
 
     # lexes a string by continously matching the dfas
@@ -203,11 +211,9 @@ module CLTK
     def self.lex(string : String) : Environment
       finalize unless @@is_finalized
       env = Environment.new
-      @@split_lines ?
-        string.lines(false).each do |line|
-          lex_string(line, env)
-        end :
-        lex_string(string, env)
+      @@split_lines ? string.lines(false).each do |line|
+        lex_string(line, env)
+      end : lex_string(string, env)
       env
     end
 
@@ -216,10 +222,10 @@ module CLTK
     # to construct the Token Values
     private def self.lex_string(string, env)
       i = 0
-      while (i <= string.size-1)
+      while (i <= string.size - 1)
         s = string[i..-1]
         size, cbindex = match(s, env)
-        cbindex && (value = @@callbacks[-cbindex].try(&.call(s[0, size], env)) ) && env.add_token(value, size)
+        cbindex && (value = @@callbacks[-cbindex].try(&.call(s[0, size], env))) && env.add_token(value, size)
         env.advance_position(size)
         i += size
       end
@@ -234,8 +240,8 @@ module CLTK
       string.each_char_with_index do |c, i|
         break unless dfas.size > 0
         dfas = dfas.compact_map do |d|
-          if dd = d[0].next.find {|x| x[0][0] <= c.ord <= x[0][1] }.try(&.[1])
-            match_end = {i+1, d[1]} if dd.accept
+          if dd = d[0].next.find { |x| x[0][0] <= c.ord <= x[0][1] }.try(&.[1])
+            match_end = {i + 1, d[1]} if dd.accept
             {dd, d[1]}
           end
         end
@@ -248,12 +254,12 @@ module CLTK
 
     # macro for creating a RegExp Rule
     private macro rex_rule(rule, state, &block)
-      {% unless block.is_a?(Nop)%}
+      {% unless block.is_a?(Nop) %}
         @@callbacks.unshift(block_to_proc {{block}})
       {% end %}
         @@rx[{{state}}] ||= Array({DFA::DFA::DState, Int32?}).new
         @@rx[{{state}}].unshift ({ DFA::RegExp.new({{rule}}).dfa,
-                        {% if block.is_a?(Nop)%}
+                        {% if block.is_a?(Nop) %}
                           nil
                         {% else %}
                         @@callbacks.size
@@ -264,7 +270,7 @@ module CLTK
     # macro for adding a String to the states String Matching DFA
     private macro string_rule(string, state, &block)
       @@strings[{{state}}] ||= Hash(String, ProcType?).new
-      @@strings[{{state}}][{{string}}] = {% if block.is_a?(Nop)%}
+      @@strings[{{state}}][{{string}}] = {% if block.is_a?(Nop) %}
          nil
       {% else %}
         block_to_proc {{block}}
@@ -273,7 +279,7 @@ module CLTK
 
     # wrap the given block to be yielded in an Environment
     private macro block_to_proc(&block)
-      {%unless block.is_a? Nop %}
+      {% unless block.is_a? Nop %}
         ProcType.new do |{{block.args.first}}, env|
           env.yield_with_self do
             {{block.body}}
@@ -283,6 +289,5 @@ module CLTK
         nil
       {% end %}
     end
-
   end
 end

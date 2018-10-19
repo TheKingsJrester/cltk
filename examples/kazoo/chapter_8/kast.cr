@@ -7,7 +7,6 @@
 require "../../../src/cltk/ast"
 
 module Kazoo
-
   class Expression < CLTK::ASTNode
   end
 
@@ -25,9 +24,9 @@ module Kazoo
 
   class Assign < Expression
     values({
-             name: String,
-             right: Expression
-           })
+      name:  String,
+      right: Expression,
+    })
   end
 
   class Unary < Expression
@@ -35,61 +34,70 @@ module Kazoo
   end
 
   class Not < Unary; end
+
   class Neg < Unary; end
 
   class Binary < Expression
     values({
-             right: Expression,
-             left: Expression
-           })
+      right: Expression,
+      left:  Expression,
+    })
   end
 
   class Add < Binary; end
+
   class Sub < Binary; end
+
   class Mul < Binary; end
+
   class Div < Binary; end
-  class LT  < Binary; end
-  class GT  < Binary; end
+
+  class LT < Binary; end
+
+  class GT < Binary; end
+
   class Eql < Binary; end
-  class Or  < Binary; end
+
+  class Or < Binary; end
+
   class And < Binary; end
 
   class Call < Expression
     values({
-             name: String,
-             args: Array(Expression)
-           })
+      name: String,
+      args: Array(Expression),
+    })
   end
 
   class If < Expression
     values({
-        cond: Expression,
-        thenExp: Expression,
-        elseExp: Expression
-      })
+      cond:    Expression,
+      thenExp: Expression,
+      elseExp: Expression,
+    })
   end
 
   class For < Expression
     values({
-             var: String,
-             init: Expression,
-             cond: Expression,
-             step: Expression,
-             body: Expression
-           })
+      var:  String,
+      init: Expression,
+      cond: Expression,
+      step: Expression,
+      body: Expression,
+    })
   end
 
   class Prototype < Expression
     values({
-             name: String,
-             arg_names: Array(String)
-           })
+      name:      String,
+      arg_names: Array(String),
+    })
   end
 
   class Function < Expression
     values({
-             proto: Prototype,
-             body: Expression
-           })
+      proto: Prototype,
+      body:  Expression,
+    })
   end
 end

@@ -41,42 +41,38 @@ describe "CLTK::CFG" do
       nil
     end
 
-
-    grammar1.production(:a, "A?")# { |a| a }
+    grammar1.production(:a, "A?") # { |a| a }
     call_count.should eq 2
 
     call_count = 0
     grammar1.callback do |type, which, p|
-#      refute_nil(p)
+      #      refute_nil(p)
 
       case call_count
       when 0
-	type.should eq :elp
-	which.should eq :empty
-
+        type.should eq :elp
+        which.should eq :empty
       when 1
-	type.should eq :elp
-	which.should eq :nonempty
-
+        type.should eq :elp
+        which.should eq :nonempty
       when 2
-	type.should eq :nelp
-	which.should eq :single
-
+        type.should eq :nelp
+        which.should eq :single
       when 3
-	type.should eq :nelp
-	which.should eq :multiple
+        type.should eq :nelp
+        which.should eq :multiple
       end
 
       call_count += 1
       nil
     end
 
-    grammar1.production(:a, "A*")# { |a| a }
+    grammar1.production(:a, "A*") # { |a| a }
     call_count.should eq 4
 
     call_count = 0
     grammar1.callback do |type, which, p|
-#      refute_nil(p)
+      #      refute_nil(p)
       type.should eq :nelp
 
       case call_count
@@ -88,7 +84,7 @@ describe "CLTK::CFG" do
       nil
     end
 
-    grammar1.production(:a, "A+")# { |a| a }
+    grammar1.production(:a, "A+") # { |a| a }
     call_count.should eq 2
   end
 
@@ -157,5 +153,4 @@ describe "CLTK::CFG" do
     p0.should eq p1
     p0.last_terminal.should eq "D"
   end
-
 end

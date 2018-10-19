@@ -15,7 +15,6 @@ require "../token"
 
 module CLTK
   module Lexers
-
     # The EBNF lexer is used by the CLTK::CFG class.
     class EBNF < CLTK::Scanner
       extend CLTK::Scanner::LexerCompatibility
@@ -23,16 +22,15 @@ module CLTK
       # Default State #
       #################
 
-      rule("*") { { :STAR     } }
-      rule("+") { { :PLUS     } }
-      rule("?") { { :QUESTION } }
-      rule(".") { { :DOT      } }
+      rule("*") { {:STAR} }
+      rule("+") { {:PLUS} }
+      rule("?") { {:QUESTION} }
+      rule(".") { {:DOT} }
 
       rule(/[a-z0-9_']+/) { |t| {:NONTERM, t.to_s} }
-      rule(/[A-Z0-9_']+/) { |t| {:TERM,    t.to_s} }
+      rule(/[A-Z0-9_']+/) { |t| {:TERM, t.to_s} }
 
       rule(" ")
-
     end
   end
 end

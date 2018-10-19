@@ -7,9 +7,9 @@ lib LibLLVM
 
   fun build_cond_br = LLVMBuildCondBr(BuilderRef, ValueRef, BasicBlockRef, BasicBlockRef) : ValueRef
 
-  fun build_f_neg = LLVMBuildFNeg(BuilderRef,ValueRef,UInt8* ): ValueRef
+  fun build_f_neg = LLVMBuildFNeg(BuilderRef, ValueRef, UInt8*) : ValueRef
 
-  fun verify_function = LLVMVerifyFunction(ValueRef, LLVM::VerifierFailureAction): Int32
+  fun verify_function = LLVMVerifyFunction(ValueRef, LLVM::VerifierFailureAction) : Int32
   fun run_function_as_main = LLVMRunFunctionAsMain(ee : ExecutionEngineRef, f : ValueRef, arg_c : LibC::UInt, arg_v : LibC::Char**, env_p : LibC::Char**) : LibC::Int
 
   fun add_aggressive_dce_pass = LLVMAddAggressiveDCEPass(pm : LibLLVM::PassManagerRef) : Void*

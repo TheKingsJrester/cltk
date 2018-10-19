@@ -12,31 +12,32 @@ module CLTK
         )
       end
     end
+
     class StandaloneParser
       def_parse(:instance)
       getter ::lh_sides, :symbols, :states
       MessagePack.mapping({
-                            lh_sides:  Hash(Int32, String),
-                            symbols: Array(String),
-                            states: Array(State)
-                          })
+        lh_sides: Hash(Int32, String),
+        symbols:  Array(String),
+        states:   Array(State),
+      })
+
       def initialize(
-            @lh_sides : Hash(Int32, String),
-            @symbols : Array(String),
-            @states : Array(State),
-            #@token_hooks : Hash(String, Array(Proc(Environment, Nil)))
-          )
+        @lh_sides : Hash(Int32, String),
+        @symbols : Array(String),
+        @states : Array(State)
+        # @token_hooks : Hash(String, Array(Proc(Environment, Nil)))
+      )
       end
     end
 
     class State
       MessagePack.mapping({
-                            id: Int32,
-                            actions: Hash(String, Array(CLTK::Parser::Action)),
-                            items: Array(CFG::Item)
-                          })
+        id:      Int32,
+        actions: Hash(String, Array(CLTK::Parser::Action)),
+        items:   Array(CFG::Item),
+      })
     end
-
 
     abstract struct Action
       def self.new(packer : MessagePack::Unpacker)
@@ -60,34 +61,40 @@ module CLTK
       end
 
       def to_msgpack(packer : MessagePack::Packer); end
-
-  end
+    end
 
     module Actions
       struct Accept
         MessagePack.mapping({id: Int32})
-        def to_msgpack(packer : MessagePack::Packer )
+
+        def to_msgpack(packer : MessagePack::Packer)
           "accept".to_msgpack(packer)
           previous_def(packer)
         end
       end
+
       struct GoTo
         MessagePack.mapping({id: Int32})
-        def to_msgpack(packer : MessagePack::Packer )
+
+        def to_msgpack(packer : MessagePack::Packer)
           "goto".to_msgpack(packer)
           previous_def(packer)
         end
       end
+
       struct Reduce
         MessagePack.mapping({id: Int32, production: CLTK::CFG::Production})
-        def to_msgpack(packer : MessagePack::Packer )
+
+        def to_msgpack(packer : MessagePack::Packer)
           "reduce".to_msgpack(packer)
           previous_def(packer)
         end
       end
+
       struct Shift
         MessagePack.mapping({id: Int32})
-        def to_msgpack(packer : MessagePack::Packer )
+
+        def to_msgpack(packer : MessagePack::Packer)
           "shift".to_msgpack(packer)
           previous_def(packer)
         end
@@ -99,6 +106,7 @@ module CLTK
     class Production
       MessagePack.mapping({id: Int32, lhs: String, rhs: Array(String)})
     end
+
     class Item
       MessagePack.mapping({id: Int32, dot: Int32, lhs: String, rhs: Array(String)})
     end

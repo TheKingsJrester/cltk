@@ -15,11 +15,9 @@ def yield_with(env)
 end
 
 module CLTK
-
   # The Lexer class may be sub-classed to produce new lexers.  These lexers
   # have a lot of features, and are described in the main documentation.
   abstract class Lexer
-
     # @return [Environment] Environment used by an instantiated lexer.
     getter :env
 
@@ -187,7 +185,7 @@ module CLTK
         @@rules[{{state}}] ||= Hash(Regex, RuleType).new
         @@rules[{{state}}][{{rule}}] =
       {% end %}
-        {% if block.is_a?(Nop)%}
+        {% if block.is_a?(Nop) %}
           Tuple.new({{flags}}, ProcType.new {nil})
         {% else %}
          Tuple.new({{flags}}, ProcType.new do |{{block.args.first || "_".id}}, env|
@@ -198,6 +196,5 @@ module CLTK
         end)
         {% end %}
     end
-
   end
 end

@@ -15,23 +15,23 @@ class CalcLexer < CLTK::Scanner
   # operators are keywords, so we use
   # stringrules to have one single
   # dfa matching
-  rule("+")                { {:PLS} }
-  rule("-")                { {:SUB} }
-  rule("*")                { {:MUL} }
-  rule("/")                { {:DIV} }
+  rule("+") { {:PLS} }
+  rule("-") { {:SUB} }
+  rule("*") { {:MUL} }
+  rule("/") { {:DIV} }
 
   # ints and floats need to be matched with
   # regular expressions (doesn't use Regex but
   # DFA::RegExp)
-  rule(/\d+\.\d+/)         { |s| {:FLOAT, s} }
-  rule(/\d+/)              { |s| {:INT,   s} }
+  rule(/\d+\.\d+/) { |s| {:FLOAT, s} }
+  rule(/\d+/) { |s| {:INT, s} }
 
   # upon sighting of a '#' (and optionally trailing ' ')
   # we go into :comment state and don't leave until we
   # find a '\n'
-  rule(/#\s*/)             {     push_state(:comment) }
-  rule(/[^\n]+/, :comment) { |t| {:COMMENT, t}        }
-  rule("\n", :comment)     {     pop_state            }
+  rule(/#\s*/) { push_state(:comment) }
+  rule(/[^\n]+/, :comment) { |t| {:COMMENT, t} }
+  rule("\n", :comment) { pop_state }
 end
 
 source = <<-source
@@ -45,12 +45,10 @@ source = <<-source
 
 source
 
-
 describe CLTK::Scanner do
   subject = CalcLexer.lex(source)
 
   describe "lex" do
-
     it "should return an Environment" do
       subject.should be_a(CLTK::Scanner::Environment)
     end
@@ -90,7 +88,7 @@ describe CLTK::Scanner do
   describe "map" do
     it "should allow on the fly modifying of tokens and positions" do
       subject.map do |t, p|
-        {type: t[0], size: p[:size] }
+        {type: t[0], size: p[:size]}
       end.should eq [{type: :COMMENT, size: 20},
                      {type: :INT, size: 1},
                      {type: :PLS, size: 1},

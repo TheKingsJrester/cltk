@@ -16,7 +16,6 @@ class ArrayCalc2 < CLTK::Parser
   finalize(use: "./spec/cltk/array_calc.bin")
 end
 
-
 describe "Message Pack Bases Parser Serialization" do
   describe ArrayCalc2 do
     actual = ArrayCalc2.parse(CLTK::Lexers::Calculator.lex("+ 1 2"))

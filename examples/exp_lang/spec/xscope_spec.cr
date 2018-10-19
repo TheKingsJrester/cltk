@@ -39,13 +39,12 @@ describe "EXP_LANG::Scope" do
         scope.clone["name"].should eq "first"
         scope.clone["age"].should eq "twelve"
       end
-
     end
   end
   context "recursive lookups" do
-      parent = EXP_LANG::Scope(String).new
-      parent["name"] = "parent"
-      scope = EXP_LANG::Scope(String).new(parent)
+    parent = EXP_LANG::Scope(String).new
+    parent["name"] = "parent"
+    scope = EXP_LANG::Scope(String).new(parent)
 
     it "holds a reference to its parent" do
       scope.parent.should eq parent
@@ -87,16 +86,14 @@ describe "EXP_LANG::Scope" do
     it "returns undefined if a key is not set" do
       scope.get("noname").should eq EXP_LANG::Undefined
     end
-
   end
 
   context "evaluation of expressions in scope" do
     scope = EXP_LANG::Scope(Expression).new
 
     it "should eval a simple variable identifier to its expression" do
-      scope["x"] = ANumber.new(value: 2.to_f);
+      scope["x"] = ANumber.new(value: 2.to_f)
       scope.eval(Variable.new(name: "x")).should eq ANumber.new(value: 2.to_f)
     end
-
   end
 end

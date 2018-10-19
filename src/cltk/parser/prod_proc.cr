@@ -16,9 +16,10 @@ module CLTK
       end
 
       def initialize(
-                     @arg_type = :splat,
-                     @selections = [] of Int32,
-                                         &block : Proc(Array(CLTK::Type), Environment, Symbol, Type))
+        @arg_type = :splat,
+        @selections = [] of Int32,
+        &block : Proc(Array(CLTK::Type), Environment, Symbol, Type)
+      )
         @block = block.is_a?(Proc) ? block : nil
       end
 

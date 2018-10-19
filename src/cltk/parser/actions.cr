@@ -30,6 +30,7 @@ module CLTK
       # specified by GoTo.id.
       struct GoTo < Action
         def initialize(@id : Int32); end
+
         # @return [String] String representation of this action.
         def to_s
           "GoTo #{self.id}"
@@ -59,6 +60,7 @@ module CLTK
       # current input token.
       struct Shift < Action
         def initialize(@id : Int32); end
+
         # @return [String] String representation of this action.
         def to_s
           "Shift to State #{self.id}"

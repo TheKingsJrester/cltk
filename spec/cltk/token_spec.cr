@@ -5,7 +5,6 @@
 require "../spec_helper"
 
 describe "Token" do
-
   describe "#initialize" do
     t0 = CLTK::Token.new(:FOO, "0")
     t1 = CLTK::Token.new(:FOO, "0")

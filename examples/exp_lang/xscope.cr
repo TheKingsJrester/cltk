@@ -1,7 +1,7 @@
 module EXP_LANG
-  class EXP_LANG::Undefined; end;
+  class EXP_LANG::Undefined; end
 
-  class Scope(T)
+class Scope(T)
     property :parent
     getter :dict
 
@@ -14,7 +14,7 @@ module EXP_LANG
 
     def get(key)
       p = parent
-      if @dict.fetch(key,nil)
+      if @dict.fetch(key, nil)
         @dict[key]
       elsif p
         p.get(key)

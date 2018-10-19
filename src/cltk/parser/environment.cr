@@ -48,8 +48,8 @@ module CLTK
       #
       # @return [void]
       def reset
-        @errors	= [] of Type
-        @he	= false
+        @errors = [] of Type
+        @he = false
       end
 
       # Setter for the *positions* array.

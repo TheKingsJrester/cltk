@@ -13,7 +13,7 @@ require "./kcontractor"
 
 # Create our JIT compiler.
 jit = Kazoo::Contractor.new
-#jit = Kazoo::JIT.new
+# jit = Kazoo::JIT.new
 
 loop do
   print("Kazoo > ")
@@ -37,7 +37,6 @@ loop do
       result = jit.execute(ir).to_f64
       puts "=> #{result} (#{result.class})"
     end
-
   rescue e : CLTK::Lexer::Exceptions::LexingError
   rescue e : CLTK::NotInLanguage
     puts "Line was not in language."

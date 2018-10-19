@@ -8,16 +8,17 @@ require "../../src/cltk/parser/parser_concern"
 
 insert_output_of() do
   module CLTK
-    alias TokenValue = (String|Int32|Float64)?
+    alias TokenValue = (String | Int32 | Float64)?
   end
+
   require "../../src/cltk/parser/crystalize"
   require "./xparser"
   EXP_LANG::Parser.crystalize
 end
 
-lexer  = EXP_LANG::Lexer
+lexer = EXP_LANG::Lexer
 parser = EXP_LANG::Parser
-scope  = EXP_LANG::Scope(Expression).new
+scope = EXP_LANG::Scope(Expression).new
 
 input = ""
 
@@ -27,7 +28,6 @@ puts "\n\n" +
 
 while true
   begin
-
     # read input
     input = Readline.readline(":: ", true) || ""
 
@@ -43,15 +43,14 @@ while true
 
     # evaluate the result with a given scope
     # (scope my be altered by the expression)
-    evaluated =  res.eval_scope(scope).to_s
+    evaluated = res.eval_scope(scope).to_s
 
     # output result of evaluation
     puts evaluated
-
-  rescue e: CLTK::Lexer::Exceptions::LexingError
+  rescue e : CLTK::Lexer::Exceptions::LexingError
     show_lexing_error(e, input)
-  rescue e: CLTK::NotInLanguage
-    show_syntax_error(e,input)
+  rescue e : CLTK::NotInLanguage
+    show_syntax_error(e, input)
   rescue e
     puts e
   end
@@ -59,18 +58,18 @@ end
 
 def show_lexing_error(e, input)
   puts "Lexing error at:\n\n"
-  puts "    " + input.split("\n")[e.line_number-1]
-  puts "    " + e.line_offset.times().map { "-" }.join + "^"
+  puts "    " + input.split("\n")[e.line_number - 1]
+  puts "    " + e.line_offset.times.map { "-" }.join + "^"
   puts e
 end
 
-def show_syntax_error(e,input)
-    pos = e.current.position
-    if pos
-      puts "Syntax error at:"
-      puts "    " + input.split("\n")[pos.line_number-1]
-      puts "    " + pos.line_offset.times().map { "-" }.join + "^"
-    else
-      puts "invalid input: #{input}"
-    end
+def show_syntax_error(e, input)
+  pos = e.current.position
+  if pos
+    puts "Syntax error at:"
+    puts "    " + input.split("\n")[pos.line_number - 1]
+    puts "    " + pos.line_offset.times.map { "-" }.join + "^"
+  else
+    puts "invalid input: #{input}"
+  end
 end

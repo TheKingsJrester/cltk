@@ -1,33 +1,33 @@
 module CLTK
-  alias TokenValue = (String|Int32)?
+  alias TokenValue = (String | Int32)?
 end
+
 require "../../src/cltk/scanner"
 require "../../src/cltk/parser"
 require "../../src/cltk/ast"
 
 module BrainFuck
-
   #
   # Lexer
   #
   class Lexer < CLTK::Scanner
     extend CLTK::Scanner::LexerCompatibility
 
-    rule(">")  { { :PTRRIGHT } }
-    rule("<")  { { :PTRLEFT  } }
-    rule("+")  { { :INC      } }
-    rule("-")  { { :DEC      } }
-    rule(".")  { { :PUT      } }
-    rule(",")  { { :GET      } }
-    rule("\[")  { { :LBRACKET } }
-    rule("\]")  { { :RBRACKET } }
+    rule(">") { {:PTRRIGHT} }
+    rule("<") { {:PTRLEFT} }
+    rule("+") { {:INC} }
+    rule("-") { {:DEC} }
+    rule(".") { {:PUT} }
+    rule(",") { {:GET} }
+    rule("\[") { {:LBRACKET} }
+    rule("\]") { {:RBRACKET} }
 
     # ignore the rest
     rule(/[\n\s]/)
 
-    rule(/#\s*/)                 { push_state(:comment) }
+    rule(/#\s*/) { push_state(:comment) }
     rule(/[^\n]/, :comment)
-    rule("\n", :comment)         { pop_state            }
+    rule("\n", :comment) { pop_state }
   end
 
   #
@@ -37,12 +37,12 @@ module BrainFuck
     production(:program, "op+") { |ops| Program.new(operations: ops.as(Array).map(&.as(Operation))) }
 
     production(:op) do
-      clause("PTRRIGHT")                      { |_| PtrRight.new  }
-      clause("PTRLEFT")                       { |_| PtrLeft.new   }
-      clause("INC")                           { |_| Increment.new }
-      clause("DEC")                           { |_| Decrement.new }
-      clause("PUT")                           { |_| Put.new       }
-      clause("GET")                           { |_| Get.new       }
+      clause("PTRRIGHT") { |_| PtrRight.new }
+      clause("PTRLEFT") { |_| PtrLeft.new }
+      clause("INC") { |_| Increment.new }
+      clause("DEC") { |_| Decrement.new }
+      clause("PUT") { |_| Put.new }
+      clause("GET") { |_| Get.new }
       clause("LBRACKET op+ RBRACKET") { |_, ops, _| Loop.new(operations: ops.as(Array).map(&.as(Operation))) }
     end
 
@@ -53,11 +53,17 @@ module BrainFuck
   # ASTNode Definitions
   #
   class Operation < CLTK::ASTNode; end
+
   class PtrRight < Operation; end
+
   class PtrLeft < Operation; end
+
   class Increment < Operation; end
+
   class Decrement < Operation; end
+
   class Put < Operation; end
+
   class Get < Operation; end
 
   class Loop < Operation
