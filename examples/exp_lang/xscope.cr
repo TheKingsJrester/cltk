@@ -1,7 +1,6 @@
 module EXP_LANG
   class EXP_LANG::Undefined; end
-
-class Scope(T)
+  class Scope(T)
     property :parent
     getter :dict
 

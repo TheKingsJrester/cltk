@@ -79,7 +79,7 @@ module CLTK
 
       lhs = @curr_lhs.to_s
       rhs = [] of String
-      tokens = @lexer.lex(expression.to_s)
+      tokens = @lexer.lex(expression.to_s).tokens
       selections = [] of Int32
 
       # Set this as the start symbol if there isn't one already
@@ -88,33 +88,33 @@ module CLTK
       # Remove EBNF tokens and replace them with new productions.
       symbol_count = 0
       tokens.each_with_index do |token, i|
-        if token.type.in? [:TERM, :NONTERM]
+        if token[:type].in? [:TERM, :NONTERM]
           # Add this symbol to the correct collection.
-          if token.type == :TERM
-            @terms << token.value.as(String)
+          if token[:type] == :TERM
+            @terms << token[:value].as(String)
           else
-            @nonterms << token.value.as(String)
+            @nonterms << token[:value].as(String)
           end
 
           if (next_token = tokens[i + 1]?)
-            tvalue = token.value.to_s.downcase
-            rhs << case next_token.type
+            tvalue = token[:value].to_s.downcase
+            rhs << case next_token[:type]
             when :QUESTION
               self.get_optional_production(
-                "#{tvalue}_optional", token.value.as(String))
+                "#{tvalue}_optional", token[:value].as(String))
             when :STAR
               self.get_list_production(
-                "#{tvalue}_list", token.value.as(String))
+                "#{tvalue}_list", token[:value].as(String))
             when :PLUS
               self.get_nonempty_list_production(
-                "#{tvalue}_nonempty_list", token.value.as(String))
-            else token.value.as(String)
+                "#{tvalue}_nonempty_list", token[:value].as(String))
+            else token[:value].as(String)
             end
             symbol_count += 1
           else
-            rhs << token.value.as(String)
+            rhs << token[:value].as(String)
           end
-        elsif token.type == :DOT
+        elsif token[:type] == :DOT
           selections << symbol_count
         end
       end

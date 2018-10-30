@@ -7,7 +7,6 @@
 
 # Crystal Language Toolkit
 require "../scanner"
-require "../token"
 
 #######################
 # Classes and Modules #
@@ -16,8 +15,7 @@ require "../token"
 module CLTK
   module Lexers
     # The EBNF lexer is used by the CLTK::CFG class.
-    class EBNF < CLTK::Scanner
-      extend CLTK::Scanner::LexerCompatibility
+    class EBNF < CLTK::Scanner(String)
       #################
       # Default State #
       #################

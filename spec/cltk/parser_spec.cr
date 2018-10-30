@@ -27,14 +27,14 @@ end
 
 string_to_symbol_map = string_to_sym_map("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
-class ABLexer < CLTK::Lexer
+class ABLexer < CLTK::Scanner(Int32?)
   rule(/a/) { {:A, 1} }
   rule(/b/) { {:B, 2} }
 
   rule(/\s/)
 end
 
-class AlphaLexer < CLTK::Lexer
+class AlphaLexer < CLTK::Scanner(String?)
   rule(/[A-Za-z]/) { |t| {string_to_symbol_map[t.upcase], t} }
 
   rule(/,/) { :COMMA }
@@ -42,7 +42,7 @@ class AlphaLexer < CLTK::Lexer
   rule(/\s/)
 end
 
-class UnderscoreLexer < CLTK::Lexer
+class UnderscoreLexer < CLTK::Scanner(String)
   rule(/\w/) { |t| {:A_TOKEN, t} }
 end
 

@@ -1,6 +1,6 @@
 require "../spec_helper"
 
-class CalcLexer < CLTK::Scanner
+class CalcLexer < CLTK::Scanner(TokenValue)
   # set a delimiter to strip the
   # string before lexing for increased
   # performance. defaults to "\n" which
@@ -45,7 +45,7 @@ source = <<-source
 
 source
 
-describe CLTK::Scanner do
+describe CLTK::Scanner(TokenValue) do
   subject = CalcLexer.lex(source)
 
   describe "lex" do

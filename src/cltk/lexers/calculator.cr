@@ -8,7 +8,7 @@
 # Classes and Modules #
 #######################
 
-require "../lexer.cr"
+require "../scanner"
 
 module CLTK
   # The CLTK::Lexers module contains the lexers that are included as part of
@@ -16,8 +16,7 @@ module CLTK
   module Lexers
     # The Calculator lexer is a simple lexer for use with several of the
     # provided parsers.
-    class Calculator < Scanner
-      extend CLTK::Scanner::LexerCompatibility
+    class Calculator < CLTK::Scanner(Int32)
 
       #################
       # Default State #
